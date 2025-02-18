@@ -3,8 +3,10 @@ Persistent
 #include Lib\AutoHotInterception.ahk
 ; AHK v2
 AHI := AutoHotInterception()
+
 keyboardId1 := AHI.GetKeyboardId(0x048D, 0xC104)
 keyboardId2 := AHI.GetKeyboardId(0x046D, 0xC338)
+
 AHI.SubscribeKeyboard(keyboardId1, true, KeyEvent1)
 AHI.SubscribeKeyboard(keyboardId2, true, KeyEvent2)
 ;AHI.SubscribeKey(keyboardId1,
