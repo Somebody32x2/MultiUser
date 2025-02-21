@@ -14,8 +14,12 @@ AHI.SubscribeKeyboard(keyboardId2, true, KeyEvent2)
 queuek1 := []
 queuek2 := []
 
-ide1 := "webstorm64.exe"
-ide2 := "Code.exe"
+ide1n := "pycharm64.exe"
+ide2n := "Code.exe"
+MsgBox("Getting IDE ID's, IDE's must be open, if closed please restart this script")
+ide1 := WinGetID("ahk_exe" ide1n)
+ide2 := WinGetID("ahk_exe" ide2n)
+
 
 browser1 := "chrome.exe"
 browser2 := "msedge.exe"
@@ -57,7 +61,7 @@ KeyEvent1(code, state) {
     if (code = keycode_switch_to_browser && ctrl1 = 1 && shif1 = 1 && state = 0) {
         if (browser1Active = true) {
             browser1Active := false
-            WinActivate("ahk_exe" ide1)
+            WinActivate(ide1)
 ;            MsgBox("Switching to IDE 1 " activation)
         } else {
             browser1Active := true
@@ -87,7 +91,7 @@ KeyEvent2(code, state) {
     if (code = keycode_switch_to_browser && ctrl2 = 1 && shif2 = 1 && state = 0) {
         if (browser2Active = true) {
             browser2Active := false
-            WinActivate("ahk_exe" ide2)
+            WinActivate(ide2)
         } else {
             browser2Active := true
             WinActivate("ahk_exe" browser2)
@@ -106,7 +110,7 @@ while (true) {
        if (browser1Active = true) {
            WinActivate("ahk_exe" browser1)
        } else {
-           WinActivate("ahk_exe" ide1)
+           WinActivate(ide1)
        }
         for key1 in queuek1 {
             AHI.SendKeyEvent(keyboardId1, key1.code, key1.state)
@@ -119,7 +123,7 @@ while (true) {
         if (browser2Active = true) {
             WinActivate("ahk_exe" browser2)
         } else {
-            WinActivate("ahk_exe" ide2)
+            WinActivate(ide2)
         }
         for key2 in queuek2 {
             AHI.SendKeyEvent(keyboardId2, key2.code, key2.state)
