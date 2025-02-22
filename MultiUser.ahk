@@ -36,25 +36,6 @@ ctrl2 := 0
 shif2 := 0
 alt2 := 0
 
-ide3_enabled := false ; uses the numpad of keyboard2 to type in another IDE
-ide3n := "Notepad.exe"
-ide3 := WinGetID("ahk_exe" ide3n)
-ide3_abc_chrs := "abcdefghijklmnopqrstuvwxyz"
-ide3_sym_chrs := "0123456789[]().:'" '"' "#<>\/*+-%_&^?;,@$!~``"
-ide3_abc_pos := 0  ;     [ABCL] [ABCN] [ABCR] [BKSP] {NUMPAD CONTROLS}
-ide3_sym_pos := 0  ;     [SYML] [SYMN] [SYMR] [SHIF]
-ide3_shif := 0     ;     [CTRC] [_UP_] [CTRV] |SHIF|
-ide3_map := Map()  ;     [LEFT] [DOWN] [RIGT] [ENTR]
-ide3_map[74] := 14 ;BKSP [___SPACE___] [SUGG] |ENTR|
-ide3_map[284] := 284 ; Enter
-ide3_map[79] := 331 ; Left
-ide3_map[76] := 328 ; Up
-ide3_map[80] := 336 ; Down
-ide3_map[81] := 333 ; Right
-ide3_map[82] := 57  ; Space
-queuek3 := []
-IDE3_COPY := 75
-IDE3_PASTE := 77
 
 KeyEvent1(code, state) {
     global ctrl1
