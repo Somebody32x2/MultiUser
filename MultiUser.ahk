@@ -55,6 +55,10 @@ ide3_map[82] := 57  ; Space
 queuek3 := []
 IDE3_COPY := 75
 IDE3_PASTE := 77
+IDE3_ABC_L := 325
+IDE3_ABC_N := 309
+IDE3_ABC_R := 55 
+
 
 KeyEvent1(code, state) {
     global ctrl1
