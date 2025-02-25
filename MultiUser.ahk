@@ -67,6 +67,7 @@ IDE3_SYM_R := 73
 IDE3_SUGGEST := 83 ; changed this to be simply NUMDel [.] -> '.', alternatively could make this a hotkey to show ide suggestions
 ide3_map[IDE3_SUGGEST] := 52 ; '.'
 
+
 KeyEvent1(code, state) {
     global ctrl1
     global shif1
