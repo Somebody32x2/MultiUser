@@ -5,7 +5,8 @@ Persistent
 AHI := AutoHotInterception()
 
 keyboardId1 := AHI.GetKeyboardId(0x048D, 0xC104) 
-keyboardId2 := AHI.GetKeyboardId(0x046D, 0xC33F)
+; keyboardId2 := AHI.GetKeyboardId(0x046D, 0xC33F)
+keyboardId2 := AHI.GetKeyboardId(0x046D, 0xC338)
 ; keyboardId2 := AHI.GetKeyboardId(0x046D, 0xC338)
 
 AHI.SubscribeKeyboard(keyboardId1, true, KeyEvent1)
@@ -16,7 +17,7 @@ queuek1 := []
 queuek2 := []
 
 ide1n := "WindowsTerminal.exe"
-ide2n := "pycharm64.exe"
+ide2n := "Code.exe"
 MsgBox("Getting IDE ID's, IDE's must be open, if closed please restart this script. Release all modifiers")
 ide1 := WinGetID("ahk_exe" ide1n)
 ide2 := WinGetID("ahk_exe" ide2n)
@@ -40,8 +41,8 @@ alt2 := 0
 ide3_enabled := true ; uses the numpad of keyboard2 to type in another IDE
 ide3n := "Notepad.exe"
 ide3 := WinGetID("ahk_exe" ide3n)
-ide3_sym_chrs := "abcdefghijklmnopqrstuvwxyz"
-ide3_abc_chrs := '0123456789[]().:"#<>\/*+-%_&^?;,@$!~``'
+ide3_abc_chrs := "abcdefghijklmnopqrstuvwxyz"
+ide3_sym_chrs := '0123456789[]().:,"#<>\/*+-%_&^?;@$!~``'
 ide3_abc_pos := 0  ;     
 ide3_sym_pos := 0  ;     
 shif3 := 0     ;     
@@ -51,7 +52,8 @@ ide3_map[79] := 331 ; Left    [ABCL] [ABCN] [ABCR] [BKSP] {NUMPAD CONTROLS}
 ide3_map[76] := 328 ; Up      [SYML] [SYMN] [SYMR] [ENTR]       
 ide3_map[80] := 336 ; Down    [CTRC] [_UP_] [CTRV] |ENTR|         
 ide3_map[81] := 333 ; Right   [LEFT] [DOWN] [RIGT] [NOTU] (NumEnter is not usable as it appears as regular enter)          
-ide3_map[82] := 57  ; Space   [___SPACE___] [SUGG] |NOTU|          
+ide3_map[82] := 57  ; Space   [___SPACE___] [_.__] |NOTU|       
+ide3_map[78] := 284 ; Enter
 queuek3 := []
 ide3_clipboard := ""
 IDE3_COPY := 75
@@ -62,7 +64,8 @@ IDE3_ABC_R := 55
 IDE3_SYM_L := 71
 IDE3_SYM_N := 72
 IDE3_SYM_R := 73
-IDE3_SUGGEST := 83 ; May change this to be simply NUMDel [.] -> '.'
+IDE3_SUGGEST := 83 ; changed this to be simply NUMDel [.] -> '.', alternatively could make this a hotkey to show ide suggestions
+ide3_map[IDE3_SUGGEST] := 52 ; '.'
 
 KeyEvent1(code, state) {
     global ctrl1
@@ -125,37 +128,42 @@ KeyEvent2(code, state) {
         if code = IDE3_ABC_L && state = 1 { ; leftABC
             ide3_abc_pos := ide3_abc_pos - 1
             if ide3_abc_pos < 0 {
-                ide3_abc_pos := ide3_abc_pos + ide3_sym_chrs.length
+                ide3_abc_pos := ide3_abc_pos + StrLen(ide3_abc_chrs)
             }
+            ToolTip("ABCR: " SubStr(ide3_abc_chrs, ide3_abc_pos+1, 1) " "  ide3_abc_pos " "  ide3_abc_chrs)  
             was_i3_key := true
         }
         else if code = IDE3_ABC_R && state = 1 { ; rightABC
-            ide3_abc_pos := Mod(ide3_abc_pos + 1, ide3_abc_chrs.length)
-            ToolTip("ABCR: " ide3_abc_chrs[ide3_abc_pos])  
+            ide3_abc_pos := Mod(ide3_abc_pos + 1, StrLen(ide3_abc_chrs))
+            ToolTip("ABCR: " SubStr(ide3_abc_chrs, ide3_abc_pos+1, 1) " "  ide3_abc_pos " "  ide3_abc_chrs)  
+            o := false
             was_i3_key := true
         }
         else if code = IDE3_SYM_L && state = 1 { ; leftSYM
             ide3_sym_pos := ide3_sym_pos - 1
             if ide3_sym_pos < 0 {
-                ide3_sym_pos := ide3_sym_pos + ide3_sym_chrs.length
+                ide3_sym_pos := ide3_sym_pos + StrLen(ide3_sym_chrs)
             }
+            ToolTip("SYMR: " SubStr(ide3_sym_chrs, ide3_sym_pos+1, 1) " "  ide3_sym_pos " "  ide3_sym_chrs)  
             was_i3_key := true
         }
         else if code = IDE3_SYM_R && state = 1 { ; rightSYM
-            ide3_sym_pos := Mod(ide3_sym_pos + 1, ide3_sym_chrs.length)  
+            ide3_sym_pos := Mod(ide3_sym_pos + 1, StrLen(ide3_sym_chrs))  
+            ToolTip("SYMR: " SubStr(ide3_sym_chrs, ide3_sym_pos+1, 1) " "  ide3_sym_pos " "  ide3_sym_chrs)  
             was_i3_key := true
         }
-        else if code = IDE3_ABC_N && state = 1 {
-            queuek3.Push({code: GetKeySC(SubStr(ide3_abc_chrs, ide3_abc_pos, 1)), state: 1})
-            queuek3.Push({code: GetKeySC(SubStr(ide3_abc_chrs, ide3_abc_pos, 1)), state: 0})
+        else if code = IDE3_ABC_N { ; doesn't need state conditional because sending raw
+            queuek3.Push({code: GetKeySC(SubStr(ide3_abc_chrs, ide3_abc_pos+1, 1)), state: state, raw:true})
             was_i3_key := true
         }
         else if code = IDE3_SYM_N && state = 1 {
-            queuek3.Push({code: GetKeySC(SubStr(ide3_sym_chrs, ide3_sym_pos, 1)), state: 1})
-            queuek3.Push({code: GetKeySC(SubStr(ide3_sym_chrs, ide3_sym_pos, 1)), state: 0})
+            queuek3.Push({code: SubStr(ide3_sym_chrs, ide3_sym_pos+1, 1), state: state, raw:false})
             was_i3_key := true
         }
-        ;               
+        else if ide3_map.Has(code) {
+            queuek3.Push({code: ide3_map[code], state: state, raw: true})
+            was_i3_key := true
+        }    
     }
 
     global browser2Active
@@ -168,16 +176,16 @@ KeyEvent2(code, state) {
             WinActivate("ahk_exe" browser2)
         }
     }
-    else {
+    else if (!ide3_enabled || !was_i3_key){
         queuek2.push({code: code, state: state})
     }
-    if (o){
-        tooltip("Keyboard2 Key - Code: " code ", State: " state " sh " shif2 ", ctrl " ctrl2)
-    }
+    ; if (o){
+    ;     tooltip("Keyboard2 Key - Code: " code ", State: " state " sh " shif2 ", ctrl " ctrl2)
+    ; }
 
 }
 while (true) {
-    ; Send every key in key1q if it is not empty
+    ; Send every key in key1q if it is not empty    
     if (queuek1.length > 0) {
        ; send appropriate modifiers
        AHI.SendKeyEvent(keyboardId1, 29, ctrl1)
@@ -211,28 +219,34 @@ while (true) {
         queuek2 := []
     }
     Sleep(20)
-    if (ide3_enabled && queuek3.Length > 0) {
+    if (ide3_enabled && queuek3.length > 0) {
+        ToolTip("shif3 " shif3)
         AHI.SendKeyEvent(keyboardId2, 42, shif3)
         WinActivate(ide3)
         for key3 in queuek3 {
-            AHI.SendKeyEvent(keyboardId2, key3.code, key3.state)
+            if key3.raw {
+                AHI.SendKeyEvent(keyboardId2, key3.code, key3.state)
+            }
+            else {
+                SendText key3.code
+            }
         }
+        queuek3 := []
     }
 
 }
-
-; Use VK89 (137) (above Num/ media key) as shift 3
+; plog := ""
+; Use VK89 (137) (above Num/ media key) as shift 3 ide2 asd;lfkjasdf;lakjsdfka;ldsjfJDSDSDSDSDSDSSDSDSDSDSDSDSDSDSDS
 if (ide3_enabled){
 vk89 up::
 {
     global shif3
     shif3 := 0
-    ToolTip("play_pause_up " GetKeyState("vk89", "P") " " A_TickCount)
 }
 
 vk89::
 {
+    global shif3
     shif3 := 1
-    ToolTip("play_pause_down " GetKeyState("vk89", "P") " " A_TickCount)
 }
 }

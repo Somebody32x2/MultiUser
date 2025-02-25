@@ -18,7 +18,7 @@ function activate(context) {
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
 	const disposable = vscode.commands.registerCommand('keep-intellisense-open.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
+		// The code you place here will zbe executed every time your command is executed
 
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from Keep Intellisense Open!');
@@ -29,7 +29,7 @@ function activate(context) {
 	vscode.window.onDidChangeWindowState((e) => {
 		// if (e.focused) {
 			vscode.commands.executeCommand('editor.action.triggerSuggest');
-		// }
+		// } 
 	});
 }
 
