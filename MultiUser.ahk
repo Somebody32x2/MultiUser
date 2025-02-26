@@ -29,7 +29,12 @@ browser2 := "msedge.exe"
 browser1Active := false
 browser2Active := false
 
-keycode_switch_to_browser := 40 ; "/' KEY
+keycode_switch_to_browser := 40 ; "/" KEY
+keycode_reserve_keyboard := 39 ; ";" KEY
+
+ide_reserved_for := 0
+ide_reserved_until := 0
+RESERVE_LENGTH := 3000
 
 ctrl1 := 0 ; 29
 shif1 := 0 ; 42
@@ -40,7 +45,11 @@ alt2 := 0
 
 ide3_enabled := true ; uses the numpad of keyboard2 to type in another IDE
 ide3n := "Notepad.exe"
-ide3 := WinGetID("ahk_exe" ide3n)
+
+ide3 := 0 
+if ide3_enabled { 
+    ide3 := WinGetID("ahk_exe" ide3n) 
+}
 ide3_abc_chrs := "abcdefghijklmnopqrstuvwxyz"
 ide3_sym_chrs := '0123456789[]().:,"#<>\/*+-%_&^?;@$!~``'
 ide3_abc_pos := 0  ;     
@@ -87,7 +96,7 @@ KeyEvent1(code, state) {
     tooltip("Keyboard1 Key - Code: " code ", State: " state ", Key: " GetKeySC(code) ", ctrl: " ctrl1 ", shif: " shif1 ", browser1Active: " browser1Active)
     }
     global browser1Active
-    if (code = keycode_switch_to_browser && ctrl1 = 1 && shif1 = 1 && state = 0) {
+    if (code = keycode_switch_to_browser && ctrl1 = 1 && shif1 = 1 && alt1 = 0 && state = 0) {
         if (browser1Active = true) {
             browser1Active := false
             WinActivate(ide1)
@@ -97,6 +106,11 @@ KeyEvent1(code, state) {
             WinActivate("ahk_exe" browser1)
 ;            MsgBox("Switching to Browser 1 " activation)
         }
+    }
+    else if (code = keycode_reserve_keyboard && ctrl1 = 1 && shif1 = 1 && alt1 = 0 && state = 0) {
+        global ide_reserved_for, ide_reserved_until
+        ide_reserved_for := 1
+        ide_reserved_until := A_TickCount + RESERVE_LENGTH
     }
     else {
         queuek1.push({code: code, state: state})
@@ -172,7 +186,12 @@ KeyEvent2(code, state) {
         if (browser2Active = true) {
             browser2Active := false
             WinActivate(ide2)
-        } else {
+        } else if (code = keycode_reserve_keyboard && ctrl2 = 1 && shif2 = 1 && alt2 = 0 && state = 0) {
+            global ide_reserved_for, ide_reserved_until
+            ide_reserved_for := 2
+            ide_reserved_until := A_TickCount + RESERVE_LENGTH
+        } 
+        else {
             browser2Active := true
             WinActivate("ahk_exe" browser2)
         }
@@ -186,8 +205,11 @@ KeyEvent2(code, state) {
 
 }
 while (true) {
+    if (A_TickCount > ide_reserved_until) {
+        ide_reserved_for := 0
+    }
     ; Send every key in key1q if it is not empty    
-    if (queuek1.length > 0) {
+    if (queuek1.length > 0 && (ide_reserved_for = 0 || ide_reserved_for = 1)) {
        ; send appropriate modifiers
        AHI.SendKeyEvent(keyboardId1, 29, ctrl1)
        AHI.SendKeyEvent(keyboardId1, 42, shif1)
@@ -204,7 +226,7 @@ while (true) {
         queuek1 := []
     }
     Sleep(20)
-    if (queuek2.length > 0) {
+    if (queuek2.length > 0 && (ide_reserved_for = 0 || ide_reserved_for = 2)) {
         AHI.SendKeyEvent(keyboardId2, 29, ctrl2)
         AHI.SendKeyEvent(keyboardId2, 42, shif2)
         AHI.SendKeyEvent(keyboardId2, 56, alt2)  
@@ -220,7 +242,7 @@ while (true) {
         queuek2 := []
     }
     Sleep(20)
-    if (ide3_enabled && queuek3.length > 0) {
+    if (ide3_enabled && queuek3.length > 0 && ide_reserved_for = 0) {
         ToolTip("shif3 " shif3)
         AHI.SendKeyEvent(keyboardId2, 42, shif3)
         WinActivate(ide3)
