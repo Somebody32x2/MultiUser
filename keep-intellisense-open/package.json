@@ -2,15 +2,20 @@
   "name": "keep-intellisense-open",
   "displayName": "Keep Intellisense Open",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.97.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./extension.js",
+  "enabledApiProposals": [
+    "telemetry"
+  ],
   "contributes": {
     "commands": [
       {
@@ -19,6 +24,7 @@
       }
     ]
   },
+  "repository": "https://github.com/Somebody32x2/MultiUser",
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
@@ -33,6 +39,9 @@
     "eslint": "^9.19.0"
   },
   "dependencies": {
-    "vsce": "^2.15.0"
+    "http": "^0.0.1-security",
+    "vsce": "^2.15.0",
+    "websocket": "^1.0.35",
+    "ws": "^8.18.1"
   }
 }

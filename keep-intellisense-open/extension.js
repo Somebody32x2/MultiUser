@@ -1,9 +1,12 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+
 const vscode = require('vscode');
+const ws = require('ws');
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
+
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -19,18 +22,66 @@ function activate(context) {
 	// The commandId parameter must match the command field in package.json
 	const disposable = vscode.commands.registerCommand('keep-intellisense-open.helloWorld', function () {
 		// The code you place here will zbe executed every time your command is executed
-
+		vscode.commands.executeCommand("getContext", "suggestWidgetMultipleSuggestions").then(r=>console.log(r))
 		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Keep Intellisense Open!');
+		vscode.window.showInformationMessage('Hello World infrom Keep Intellisense Open!');
 	});
 
 	context.subscriptions.push(disposable);
+	vscode.window.onDidChangeTextEditorViewColumn()
 	// register handler for onDidChangeWindowState
+	let recent_suggest_closes = []
+	let recent_window_closes = []
+
 	vscode.window.onDidChangeWindowState((e) => {
 		// if (e.focused) {
-			vscode.commands.executeCommand('editor.action.triggerSuggest');
+			// vscode.commands.executeCommand('editor.action.triggerSuggest');
 		// } 
+		// console.log(e)
+		if (!e.focused) {
+			recent_window_closes.unshift(new Date().getTime())
+			// console.log(recent_window_closes.filter(e=>{console.log((new Date().getTime() - e)); return (new Date().getTime() - e) < (30 * 1000)}))
+			recent_window_closes = recent_window_closes.filter(e=>{return (new Date().getTime() - e) < (30 * 1000)})
+			// console.log({recent_suggest_closes})
+			// console.log({recent_window_closes})
+		} else {
+			// if we closed the suggest and the window at about the same time, reopen the suggest
+			console.log("delta " + (recent_window_closes[0] - recent_suggest_closes[0]))
+			if (recent_window_closes[0] - recent_suggest_closes[0] < 100){
+				vscode.commands.executeCommand('editor.action.triggerSuggest');
+			}
+		}
 	});
+	console.log(vscode)
+	console.log("starting server")
+	// console.log(vscode.env.FPS_BROWSER_APP_PROFILE_STRING), 2000)
+	let PORT = 8080
+	let wss = undefined
+	while (!wss) {
+		try	{
+			wss = new ws.WebSocketServer({ port: PORT });
+		} catch {
+			PORT += 1
+		}
+    }  
+	vscode.window.showInformationMessage('Listening on port ' + PORT);
+	
+	wss.on('connection', function connection(ws) {
+	ws.on('error', console.error);
+
+	ws.on('message', function message(data) {
+		// console.log(data.byteLength);
+		if (data.byteLength == 5) { // 5 for "false", 4 for "true"
+			recent_suggest_closes.unshift(new Date().getTime())
+			recent_suggest_closes = recent_suggest_closes.filter(e=>{return (new Date().getTime() - e) < (30 * 1000)})
+			// console.log({recent_suggest_closes})
+			// console.log({recent_window_closes})
+		}
+	});
+
+	ws.send('something');
+	});
+
 }
 
 // This method is called when your extension is deactivated
@@ -41,4 +92,4 @@ module.exports = {
 	deactivate
 }
 
-
+// "suggestWidgetMultipleSuggestions"

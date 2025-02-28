@@ -5,13 +5,16 @@
 {
 	"version": "0.2.0",
 	"configurations": [
+
 		{
 			"name": "Run Extension",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
-			]
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				// "--enable-proposed-api",
+				"--enable-proposed-api undefined_publisher.keep-intellisense-open"
+			],
 		}
 	]
 }

@@ -11,13 +11,12 @@ keyboardId2 := AHI.GetKeyboardId(0x046D, 0xC338)
 
 AHI.SubscribeKeyboard(keyboardId1, true, KeyEvent1)
 AHI.SubscribeKeyboard(keyboardId2, true, KeyEvent2)
-;AHI.SubscribeKey(keyboardId1,
 
 queuek1 := []
 queuek2 := []
 
-ide1n := "WindowsTerminal.exe"
-ide2n := "Code.exe"
+ide2n := "WindowsTerminal.exe"
+ide1n := "Code.exe"
 MsgBox("Getting IDE ID's, IDE's must be open, if closed please restart this script. Release all modifiers")
 ide1 := WinGetID("ahk_exe" ide1n)
 ide2 := WinGetID("ahk_exe" ide2n)
@@ -208,6 +207,11 @@ while (true) {
     if (A_TickCount > ide_reserved_until) {
         ide_reserved_for := 0
     }
+    ; ; Practice
+    ; if (Random(0, 5) = 0) {
+    ;     queuek2.Push({code: 42, state: 1})
+    ;     queuek2.Push({code: 42, state: 0})
+    ; }
     ; Send every key in key1q if it is not empty    
     if (queuek1.length > 0 && (ide_reserved_for = 0 || ide_reserved_for = 1)) {
        ; send appropriate modifiers
@@ -225,7 +229,7 @@ while (true) {
         }
         queuek1 := []
     }
-    Sleep(20)
+    Sleep(50)
     if (queuek2.length > 0 && (ide_reserved_for = 0 || ide_reserved_for = 2)) {
         AHI.SendKeyEvent(keyboardId2, 29, ctrl2)
         AHI.SendKeyEvent(keyboardId2, 42, shif2)
@@ -241,7 +245,7 @@ while (true) {
         }
         queuek2 := []
     }
-    Sleep(20)
+    
     if (ide3_enabled && queuek3.length > 0 && ide_reserved_for = 0) {
         ToolTip("shif3 " shif3)
         AHI.SendKeyEvent(keyboardId2, 42, shif3)
@@ -255,21 +259,22 @@ while (true) {
             }
         }
         queuek3 := []
+        Sleep(50)
     }
 
 }
 ; plog := ""
 ; Use VK89 (137) (above Num/ media key) as shift 3 ide2 asd;lfkjasdf;lakjsdfka;ldsjfJDSDSDSDSDSDSSDSDSDSDSDSDSDSDSDS
 if (ide3_enabled){
-vk89 up::
-{
-    global shif3
-    shif3 := 0
-}
+    vk89 up::
+    {
+        global shif3
+        shif3 := 0
+    }
 
-vk89::
-{
-    global shif3
-    shif3 := 1
-}
+    vk89::
+    {
+        global shif3
+        shif3 := 1
+    }
 }
