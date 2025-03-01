@@ -22,8 +22,8 @@ ide1 := WinGetID("ahk_exe" ide1n)
 ide2 := WinGetID("ahk_exe" ide2n)
 
 
-browser1 := "chrome.exe"
-browser2 := "msedge.exe"
+browser1 := "firefox.exe"
+browser2 := "chrome.exe"
 
 browser1Active := false
 browser2Active := false
@@ -42,8 +42,11 @@ ctrl2 := 0
 shif2 := 0
 alt2 := 0
 
-ide3_enabled := true ; uses the numpad of keyboard2 to type in another IDE
-ide3n := "Notepad.exe"
+ide3_enabled := false ; uses the numpad of keyboard2 to type in another IDE
+if ide3_enabled {
+    MsgBox("Getting IDE3")
+}
+ide3n := "Code.exe"
 
 ide3 := 0 
 if ide3_enabled { 
@@ -51,9 +54,10 @@ if ide3_enabled {
 }
 ide3_abc_chrs := "abcdefghijklmnopqrstuvwxyz"
 ide3_sym_chrs := '0123456789[]().:,"#<>\/*+-%_&^?;@$!~``'
-ide3_abc_pos := 0  ;     
-ide3_sym_pos := 0  ;     
-shif3 := 0     ;     
+ide3_abc_pos := 0
+ide3_sym_pos := 0  
+shif3 := 0
+ctrl3 := 0      
 ide3_map := Map()  ;     
 ide3_map[74] := 14 ;  BKSP    (    ) (SHIF) (    ) (    ) {MEDIA KEYS -- REMAP TO VK 136-139}
 ide3_map[79] := 331 ; Left    [ABCL] [ABCN] [ABCR] [BKSP] {NUMPAD CONTROLS}         
@@ -74,8 +78,31 @@ IDE3_SYM_N := 72
 IDE3_SYM_R := 73
 IDE3_SUGGEST := 83 ; changed this to be simply NUMDel [.] -> '.', alternatively could make this a hotkey to show ide suggestions
 ide3_map[IDE3_SUGGEST] := 52 ; '.'
-
-
+ide3_gui := 0
+if ide3_enabled {
+    ide3_gui := Gui("+AlwaysOnTop +Resize -MaximizeBox -Caption +MinSize100x100", "Preview")
+    ide3_gui.BackColor := "3c4852"
+    WinSetTransColor("3c4852", ide3_gui)
+    WinSetTransparent(120, ide3_gui)
+    ide3_gui.SetFont("s16 w600 cWhite")
+    ide3_abc_text := ide3_gui.Add("Text", "", "z | a | b")
+    ide3_sym_text := ide3_gui.Add("Text", "", "`` | 0 | 1")
+    OnMessage(0x0201, WM_LBUTTONDOWN)
+    WinGetPos(&idex, &idey, &idew, &ideh, ide3)
+    ide3_gui.Show("x" idex  " y"  idey)
+}
+WM_LBUTTONDOWN(a, b, c, d) { ; this wizardry allows the window to be dragged
+	PostMessage 0xA1, 2,,, d
+}
+UpdateIDE3_GUI(){
+    ControlSetText(
+        SubStr(ide3_abc_chrs, ide3_abc_pos, 1) 
+        " | [" 
+        SubStr(ide3_abc_chrs, ide3_abc_pos+1, 1) 
+        "] | " 
+        SubStr(ide3_abc_chrs, ide3_abc_pos+2, 1), ide3_abc_text)
+    ControlSetText(SubStr(ide3_sym_chrs, ide3_sym_pos, 1) " | [" SubStr(ide3_sym_chrs, ide3_sym_pos+1, 1) "] | " SubStr(ide3_sym_chrs, ide3_sym_pos+1, 1) , ide3_sym_text)
+}
 KeyEvent1(code, state) {
     global ctrl1
     global shif1
@@ -144,11 +171,13 @@ KeyEvent2(code, state) {
             if ide3_abc_pos < 0 {
                 ide3_abc_pos := ide3_abc_pos + StrLen(ide3_abc_chrs)
             }
+            UpdateIDE3_GUI()
             ToolTip("ABCR: " SubStr(ide3_abc_chrs, ide3_abc_pos+1, 1) " "  ide3_abc_pos " "  ide3_abc_chrs)  
             was_i3_key := true
         }
         else if code = IDE3_ABC_R && state = 1 { ; rightABC
             ide3_abc_pos := Mod(ide3_abc_pos + 1, StrLen(ide3_abc_chrs))
+            UpdateIDE3_GUI()
             ToolTip("ABCR: " SubStr(ide3_abc_chrs, ide3_abc_pos+1, 1) " "  ide3_abc_pos " "  ide3_abc_chrs)  
             o := false
             was_i3_key := true
@@ -158,11 +187,13 @@ KeyEvent2(code, state) {
             if ide3_sym_pos < 0 {
                 ide3_sym_pos := ide3_sym_pos + StrLen(ide3_sym_chrs)
             }
+            UpdateIDE3_GUI()
             ToolTip("SYMR: " SubStr(ide3_sym_chrs, ide3_sym_pos+1, 1) " "  ide3_sym_pos " "  ide3_sym_chrs)  
             was_i3_key := true
         }
         else if code = IDE3_SYM_R && state = 1 { ; rightSYM
             ide3_sym_pos := Mod(ide3_sym_pos + 1, StrLen(ide3_sym_chrs))  
+            UpdateIDE3_GUI()
             ToolTip("SYMR: " SubStr(ide3_sym_chrs, ide3_sym_pos+1, 1) " "  ide3_sym_pos " "  ide3_sym_chrs)  
             was_i3_key := true
         }
@@ -229,7 +260,7 @@ while (true) {
         }
         queuek1 := []
     }
-    Sleep(50)
+    Sleep(20)
     if (queuek2.length > 0 && (ide_reserved_for = 0 || ide_reserved_for = 2)) {
         AHI.SendKeyEvent(keyboardId2, 29, ctrl2)
         AHI.SendKeyEvent(keyboardId2, 42, shif2)
@@ -247,8 +278,8 @@ while (true) {
     }
     
     if (ide3_enabled && queuek3.length > 0 && ide_reserved_for = 0) {
-        ToolTip("shif3 " shif3)
         AHI.SendKeyEvent(keyboardId2, 42, shif3)
+        AHI.SendKeyEvent(keyboardId2, 29, ctrl3)
         WinActivate(ide3)
         for key3 in queuek3 {
             if key3.raw {
@@ -259,12 +290,12 @@ while (true) {
             }
         }
         queuek3 := []
-        Sleep(50)
+        Sleep(20)
     }
 
 }
 ; plog := ""
-; Use VK89 (137) (above Num/ media key) as shift 3 ide2 asd;lfkjasdf;lakjsdfka;ldsjfJDSDSDSDSDSDSSDSDSDSDSDSDSDSDSDS
+; Use VK89 (137) (above Num/ media key) as shift 3 ide2
 if (ide3_enabled){
     vk89 up::
     {
@@ -277,4 +308,16 @@ if (ide3_enabled){
         global shif3
         shif3 := 1
     }
+    vk8a up::
+    {
+        global ctrl3
+        ctrl3 := 0
+    }
+
+    vk8a::
+    {
+        global ctrl3
+        ctrl3 := 1
+    }
+    
 }

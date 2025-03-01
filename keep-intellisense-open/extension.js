@@ -28,11 +28,11 @@ function activate(context) {
 	});
 
 	context.subscriptions.push(disposable);
-	vscode.window.onDidChangeTextEditorViewColumn()
 	// register handler for onDidChangeWindowState
 	let recent_suggest_closes = []
 	let recent_window_closes = []
-
+	let isOpen = true
+	let lastReopen = 0
 	vscode.window.onDidChangeWindowState((e) => {
 		// if (e.focused) {
 			// vscode.commands.executeCommand('editor.action.triggerSuggest');
@@ -44,12 +44,26 @@ function activate(context) {
 			recent_window_closes = recent_window_closes.filter(e=>{return (new Date().getTime() - e) < (30 * 1000)})
 			// console.log({recent_suggest_closes})
 			// console.log({recent_window_closes})
+			isOpen = false
+			console.log({isOpen})
+
+			// if the suggest was just closed, reopen while the window is closed
+			if (recent_suggest_closes.length > 0){
+				console.log({"dreopen" : new Date().getTime() - lastReopen, "drsugclose": new Date().getTime() - recent_suggest_closes[0], isOpen})
+				if (new Date().getTime() - lastReopen > 100 && new Date().getTime() - recent_suggest_closes[0] < 100 && !isOpen){
+					vscode.commands.executeCommand('editor.action.triggerSuggest');
+					lastReopen = new Date().getTime()
+
+				}
+			}
 		} else {
 			// if we closed the suggest and the window at about the same time, reopen the suggest
 			console.log("delta " + (recent_window_closes[0] - recent_suggest_closes[0]))
 			if (recent_window_closes[0] - recent_suggest_closes[0] < 100){
 				vscode.commands.executeCommand('editor.action.triggerSuggest');
 			}
+			isOpen = true
+			console.log({isOpen})
 		}
 	});
 	console.log(vscode)
@@ -69,6 +83,8 @@ function activate(context) {
 	wss.on('connection', function connection(ws) {
 	ws.on('error', console.error);
 
+	
+
 	ws.on('message', function message(data) {
 		// console.log(data.byteLength);
 		if (data.byteLength == 5) { // 5 for "false", 4 for "true"
@@ -76,6 +92,7 @@ function activate(context) {
 			recent_suggest_closes = recent_suggest_closes.filter(e=>{return (new Date().getTime() - e) < (30 * 1000)})
 			// console.log({recent_suggest_closes})
 			// console.log({recent_window_closes})
+
 		}
 	});
 
