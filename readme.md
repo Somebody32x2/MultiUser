@@ -1,3 +1,6 @@
+# Deprecated: Doesn't work well in practice. 
+## To accomplish this well, install Linux and use lightdm, then use loginctl to assign a keyboard, mouse, and graphics card (integrated graphics works too) to a second seat ('seat1')
+
 # MultiUser
 A tool to allow multiple keyboards to allow two programmers to develop simultaneously on the same computer.
 
